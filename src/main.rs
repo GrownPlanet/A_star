@@ -20,16 +20,17 @@ pub fn main() -> Result<(), String> {
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
 
     let tile_map = vec![
-        vec![1, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 1, 0],
-        vec![0, 0, 0, 0, 1, 0, 0, 0],
-        vec![0, 0, 0, 1, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 1],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
     ];
 
-    canvas.clear();
-    canvas.present();
+    let start = Point::new(1, 1);
+    let end = Point::new(5, 5);
+
     let mut event_pump = sdl_context.event_pump()?;
 
     'running: loop {
@@ -44,9 +45,7 @@ pub fn main() -> Result<(), String> {
             }
         }
 
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.clear();
-
+        // drawing the tilemap
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         for y in 0..6
         {
@@ -61,6 +60,13 @@ pub fn main() -> Result<(), String> {
             }
         }
 
+        canvas.set_draw_color(Color::RGB(255, 255, 0));
+        canvas.fill_rect(Rect::new(start.x * 100, start.y * 100, 100, 100))?;
+
+        canvas.set_draw_color(Color::RGB(0, 255, 255));
+        canvas.fill_rect(Rect::new(end.x * 100, end.y * 100, 100, 100))?;
+
+        // drawing a grid
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         for x in 0..8
         {
@@ -77,4 +83,39 @@ pub fn main() -> Result<(), String> {
     }
 
     Ok(())
+}
+
+fn square(a: u32) -> u32 { a * a }
+
+struct Node
+{
+    pub g_cost: u32, // how far away from start
+    pub h_cost: u32, // how far away from end
+    pub f_cost: u32, // g and h cost combined 
+}
+
+fn calculate_node(point: Point, start: Point, end: Point) -> Node
+{
+    let g_cost = (square((point.x - start.x) as u32) as f32 + square((point.y - start.y) as u32) as f32).sqrt() as u32;
+    let h_cost = (square((point.x - end.x) as u32) as f32 + square((point.y - end.y) as u32) as f32).sqrt() as u32;
+    let f_cost = g_cost + h_cost;
+    return Node
+    {
+        g_cost,
+        h_cost,
+        f_cost
+    };
+}
+
+fn path_finder(start: Point, end: Point)
+{
+    let mut open: Vec<Node> = vec![];
+    let mut closed: Vec<Node> = vec![];
+
+    open.push(calculate_node(start, start, end));
+
+    loop {
+        //let current_node = sqrtf32(x)
+    }
+
 }
