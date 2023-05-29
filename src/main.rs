@@ -85,37 +85,118 @@ pub fn main() -> Result<(), String> {
     Ok(())
 }
 
-fn square(a: u32) -> u32 { a * a }
+fn square(a: i32) -> i32 { a * a }
 
 struct Node
 {
+    pub location: Point,
     pub g_cost: u32, // how far away from start
     pub h_cost: u32, // how far away from end
     pub f_cost: u32, // g and h cost combined 
+    pub parrent: Option<Point>,
+    pub direction_to_parrent: u32,
 }
 
-fn calculate_node(point: Point, start: Point, end: Point) -> Node
+impl Node
 {
-    let g_cost = (square((point.x - start.x) as u32) as f32 + square((point.y - start.y) as u32) as f32).sqrt() as u32;
-    let h_cost = (square((point.x - end.x) as u32) as f32 + square((point.y - end.y) as u32) as f32).sqrt() as u32;
-    let f_cost = g_cost + h_cost;
-    return Node
+    fn calculate(point: Point, start: Point, end: Point, parrent: Option<Point>, direction_to_parrent: u32) -> Node
     {
-        g_cost,
-        h_cost,
-        f_cost
-    };
+        let g_cost = (square(point.x - start.x) as f32 + square(point.y - start.y) as f32).sqrt() as u32;
+        let h_cost = (square(point.x - end.x) as f32 + square(point.y - end.y) as f32).sqrt() as u32;
+        let f_cost = g_cost + h_cost;
+        return Node
+        {
+            location: point,
+            g_cost,
+            h_cost,
+            f_cost,
+            parrent,
+            direction_to_parrent,
+        };
+    }
+    fn compare(node1: &Node, node2: &Node) -> bool
+    {
+        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.location == node2.location
+    }
 }
 
-fn path_finder(start: Point, end: Point)
+fn path_finder(start: Point, end: Point, tile_map: Vec<Vec<u32>>) -> Vec<u32>
 {
     let mut open: Vec<Node> = vec![];
     let mut closed: Vec<Node> = vec![];
 
-    open.push(calculate_node(start, start, end));
+    open.push(Node::calculate(start, start, end, None, 0));
+
+    let mut current = Node::calculate(open[0].location, start, end, open[0].parrent, open[0].direction_to_parrent);
 
     loop {
-        //let current_node = sqrtf32(x)
-    }
+        // node with the lowest f cost
+        for node in &open
+        {
+            if node.f_cost < current.f_cost
+            {
+                current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.parrent, node.direction_to_parrent);
+            }
+        }
 
+        // remove from open list
+        for index in 0..open.len()
+        {
+            if Node::compare(&current, &open[index])
+            {
+                open.remove(index);
+            }
+        }
+
+        // add to closed list
+        closed.push(Node::calculate(Point::new(current.location.x, current.location.y), start, end, current.parrent, current.direction_to_parrent));
+
+        if current.location == end
+        {
+            let mut path: Vec<u32> = vec![];
+            let mut parrent: Node = current;
+
+            loop
+            {
+                if parrent.parrent == None
+                {
+                    return path;
+                }
+                path.push(parrent.direction_to_parrent);
+                parrent = current.parrent;
+            }
+        }
+
+        // compare to neighbours
+        let neightbours = [
+            Node::calculate(Point::new(current.location.x + 10, current.location.y), start, end, Some(current.location), 2),
+            Node::calculate(Point::new(current.location.x - 10, current.location.y), start, end, Some(current.location), 4),
+            Node::calculate(Point::new(current.location.x, current.location.y + 10), start, end, Some(current.location), 3),
+            Node::calculate(Point::new(current.location.x, current.location.y - 10), start, end, Some(current.location), 1),
+        ];
+
+        'l: for neighbour in neightbours
+        {
+            // check if neighbour is in closed
+            for close in &closed
+            {
+                if Node::compare(&neighbour, close)
+                {
+                    break 'l;
+                }
+            }
+
+            for node in &open
+            {
+                if Node::compare(&neighbour, node)
+                {
+                    if neighbour.f_cost > node.f_cost
+                    {
+                        break 'l;
+                    }
+                }
+            }
+            open.push(neighbour);
+        }
+    }
 }
