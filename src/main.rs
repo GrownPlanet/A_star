@@ -128,6 +128,8 @@ fn path_finder(start: Point, end: Point, tile_map: Vec<Vec<u32>>) -> Vec<u32>
 
     let mut current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent);
 
+    let mut vec_n_1: Vec<u32>;
+
     loop {
         // node with the lowest f cost
         for node in &open
@@ -162,12 +164,8 @@ fn path_finder(start: Point, end: Point, tile_map: Vec<Vec<u32>>) -> Vec<u32>
         }
 
         // compare to neighbours
-        let mut vec_n_1 = vec![];
-        for v in 0..current.path_to_parrent.len()
-        {
-            vec_n_1.push(current.path_to_parrent[v]);
-        }
-        vec_n_1.push(2);
+        vec_n_1 = current.path_to_parrent.clone();
+        vec_n_1.push(1);
 
         let mut vec_n_2 = vec![];
         for v in 0..current.path_to_parrent.len()
