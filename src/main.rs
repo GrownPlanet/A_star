@@ -28,12 +28,14 @@ pub fn main() -> Result<(), String> {
         vec![0, 0, 0, 0, 0, 0, 0, 0],
     ];
 
-    let start = Point::new(1, 1);
-    let end = Point::new(6, 5);
+    let mut start = Point::new(1, 1);
+    let end = Point::new(5, 5);
 
     let mut event_pump = sdl_context.event_pump()?;
 
     let a = path_finder(start, end, &tile_map);
+
+    let mut index = 0;
 
     for v in &a
     {
@@ -68,13 +70,25 @@ pub fn main() -> Result<(), String> {
             }
         }
 
+        canvas.set_draw_color(Color::RGB(255, 0, 0));
+        canvas.fill_rect(Rect::new(end.x * 100, end.y * 100, 100, 100))?;
+
         canvas.set_draw_color(Color::RGB(255, 255, 0));
         canvas.fill_rect(Rect::new(start.x * 100, start.y * 100, 100, 100))?;
 
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.fill_rect(Rect::new(end.x * 100, end.y * 100, 100, 100))?;
+        if index < 8
+        {
+            match a[index] {
+                1 => start.y -= 1,
+                2 => start.x += 1,
+                3 => start.y += 1,
+                4 => start.x -= 1,
+                _ => (),
+            }
+            index += 1;
+            println!("{}", index);
+        }
 
-        // drawing a grid
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         for x in 0..8
         {
