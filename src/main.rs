@@ -29,15 +29,17 @@ pub fn main() -> Result<(), String> {
     ];
 
     let start = Point::new(1, 1);
-    let end = Point::new(1, 5);
+    let end = Point::new(6, 5);
 
     let mut event_pump = sdl_context.event_pump()?;
 
     let a = path_finder(start, end, &tile_map);
-    for v in a.iter()
+
+    for v in &a
     {
         print!("{} ", v);
     }
+    println!();
 
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -69,7 +71,7 @@ pub fn main() -> Result<(), String> {
         canvas.set_draw_color(Color::RGB(255, 255, 0));
         canvas.fill_rect(Rect::new(start.x * 100, start.y * 100, 100, 100))?;
 
-        canvas.set_draw_color(Color::RGB(0, 255, 255));
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.fill_rect(Rect::new(end.x * 100, end.y * 100, 100, 100))?;
 
         // drawing a grid
@@ -84,7 +86,7 @@ pub fn main() -> Result<(), String> {
         }
         
         canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32));
         // The rest of the game loop goes here...
     }
 
@@ -120,7 +122,7 @@ impl Node
     }
     fn compare(node1: &Node, node2: &Node) -> bool
     {
-        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.location == node2.location
+        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.location.x == node2.location.x && node1.location.y == node1.location.y
     }
 }
 
@@ -143,23 +145,23 @@ fn path_finder(start: Point, end: Point, _tile_map: &Vec<Vec<u32>>) -> Vec<u32>
         // node with the lowest f cost
         for node in &open
         {
-            println!("{}, {}", current.f_cost, node.f_cost);
-            if node.f_cost < current.f_cost
+            if node.f_cost < current.f_cost //|| square(current.f_cost as i32) == square(node.h_cost as i32) + square(node.g_cost as i32)
             {
                 current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
             }
-            else if node.h_cost < current.f_cost
+            else if false //node.h_cost < current.h_cost
             {
                 current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
             }
         }
 
         // remove from open list
-        for index in 1..open.len()
+        'f: for index in 0..(open.len() - 1)
         {
-            if Node::compare(&current, &open[index - 1])
+            if Node::compare(&current, &open[index])
             {
                 open.remove(index);
+                break 'f;
             }
         }
 
@@ -208,7 +210,7 @@ fn path_finder(start: Point, end: Point, _tile_map: &Vec<Vec<u32>>) -> Vec<u32>
             {
                 if Node::compare(&neighbour, close)
                 {
-                    break 'l;
+                    continue 'l;
                 }
             }
 
