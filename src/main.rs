@@ -29,7 +29,7 @@ pub fn main() -> Result<(), String> {
     ];
 
     let start = Point::new(1, 1);
-    let end = Point::new(5, 5);
+    let end = Point::new(1, 5);
 
     let mut event_pump = sdl_context.event_pump()?;
 
@@ -128,40 +128,45 @@ fn path_finder(start: Point, end: Point, _tile_map: &Vec<Vec<u32>>) -> Vec<u32>
 {
     let mut open: Vec<Node> = vec![];
     let mut closed: Vec<Node> = vec![];
-    let mut path_list: Vec<Vec<u32>> = vec![];
 
-    let path = vec![];
-    open.push(Node::calculate(start, start, end, path));
+    open.push(Node::calculate(start, start, end, vec![]));
 
-    let mut current = Node::calculate(open[0].location, start, end, p);
+    let mut current;
 
     let mut vec_n_1: Vec<u32>;
-    //let mut vec_n_2: Vec<u32>;
-    //let mut vec_n_3: Vec<u32>;
-    //let mut vec_n_4: Vec<u32>;
+    let mut vec_n_2: Vec<u32>;
+    let mut vec_n_3: Vec<u32>;
+    let mut vec_n_4: Vec<u32>;
 
     loop {
-        current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent);
+        current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent.clone());
         // node with the lowest f cost
         for node in &open
         {
+            println!("{}, {}", current.f_cost, node.f_cost);
             if node.f_cost < current.f_cost
             {
-                current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent);
+                current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
+            }
+            else if node.h_cost < current.f_cost
+            {
+                current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
             }
         }
 
         // remove from open list
-        for index in 0..open.len()
+        for index in 1..open.len()
         {
-            if Node::compare(&current, &open[index])
+            if Node::compare(&current, &open[index - 1])
             {
                 open.remove(index);
             }
         }
 
         // add to closed list
-        closed.push(Node::calculate(Point::new(current.location.x, current.location.y), start, end, current.path_to_parrent));
+        closed.push(Node::calculate(Point::new(current.location.x, current.location.y), start, end, current.path_to_parrent.clone()));
+
+
 
         if current.location == end
         {
@@ -178,31 +183,22 @@ fn path_finder(start: Point, end: Point, _tile_map: &Vec<Vec<u32>>) -> Vec<u32>
         // compare to neighbours
         vec_n_1 = current.path_to_parrent.clone();
         vec_n_1.push(2);
-        path_list.push(vec_n_1.clone());
-        let n_1_index = path_list.len();
+
+        vec_n_2 = current.path_to_parrent.clone();
+        vec_n_2.push(4);
 
 
-        //vec_n_2 = current.path_to_parrent.clone();
-        //vec_n_2.push(4);
-        //path_list.push(vec_n_2.clone());
-        //let n_2_index = path_list.len();
+        vec_n_3 = current.path_to_parrent.clone();
+        vec_n_3.push(3);
 
-
-        //vec_n_3 = current.path_to_parrent.clone();
-        //vec_n_3.push(3);
-        //path_list.push(vec_n_3.clone());
-        //let n_3_index = path_list.len();
-
-        //vec_n_4 = current.path_to_parrent.clone();
-        //vec_n_4.push(1);
-        //path_list.push(vec_n_4.clone());
-        //let n_4_index = path_list.len();
+        vec_n_4 = current.path_to_parrent.clone();
+        vec_n_4.push(1);
         
         let neightbours = [
-            Node::calculate(Point::new(current.location.x + 1, current.location.y), start, end, path_list[n_1_index - 1]),
-            //Node::calculate(Point::new(current.location.x - 1, current.location.y), start, end, &path_list[n_2_index - 1]),
-            //Node::calculate(Point::new(current.location.x, current.location.y + 1), start, end, &path_list[n_3_index - 1]),
-            //Node::calculate(Point::new(current.location.x, current.location.y - 1), start, end, &path_list[n_4_index - 1]),
+            Node::calculate(Point::new(current.location.x + 1, current.location.y), start, end, vec_n_1),
+            Node::calculate(Point::new(current.location.x - 1, current.location.y), start, end, vec_n_2),
+            Node::calculate(Point::new(current.location.x, current.location.y + 1), start, end, vec_n_3),
+            Node::calculate(Point::new(current.location.x, current.location.y - 1), start, end, vec_n_4),
         ];
 
         'l: for neighbour in neightbours
