@@ -22,9 +22,9 @@ pub fn main() -> Result<(), String> {
     let tile_map = vec![
         vec![0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![1, 1, 1, 1, 1, 1, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 1, 1, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
     ];
 
@@ -56,14 +56,13 @@ pub fn main() -> Result<(), String> {
         }
 
         // drawing the tilemap
-        canvas.set_draw_color(Color::RGB(255, 255, 255));
         for y in 0..6
         {
             for x in 0..8
             {
                 match tile_map[y][x] {
                    0 => canvas.set_draw_color(Color::RGB(255, 255, 255)),
-                   1 => canvas.set_draw_color(Color::RGB(0, 255, 0)),
+                   1 => canvas.set_draw_color(Color::RGB(45, 45, 45)),
                    _ => (),
                 }
                 canvas.fill_rect(Rect::new(x as i32 * 100, y as i32 * 100, 100, 100))?;
@@ -76,7 +75,7 @@ pub fn main() -> Result<(), String> {
         canvas.set_draw_color(Color::RGB(255, 255, 0));
         canvas.fill_rect(Rect::new(start.x * 100, start.y * 100, 100, 100))?;
 
-        if index < 8
+        if index < a.len()
         {
             match a[index] {
                 1 => start.y -= 1,
@@ -86,7 +85,6 @@ pub fn main() -> Result<(), String> {
                 _ => (),
             }
             index += 1;
-            println!("{}", index);
         }
 
         canvas.set_draw_color(Color::RGB(0, 0, 0));
@@ -140,7 +138,7 @@ impl Node
     }
 }
 
-fn path_finder(start: Point, end: Point, _tile_map: &Vec<Vec<u32>>) -> Vec<u32>
+fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
 {
     let mut open: Vec<Node> = vec![];
     let mut closed: Vec<Node> = vec![];
@@ -226,6 +224,16 @@ fn path_finder(start: Point, end: Point, _tile_map: &Vec<Vec<u32>>) -> Vec<u32>
                 {
                     continue 'l;
                 }
+            }
+
+            if neighbour.location.y < 0 || neighbour.location.x < 0 || neighbour.location.y >= 6 || neighbour.location.x >= 8
+            {
+                continue 'l;
+            }
+
+            if tile_map[neighbour.location.y as usize][neighbour.location.x as usize] == 1
+            {
+                continue 'l;
             }
 
             for node in &open
