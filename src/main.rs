@@ -175,19 +175,6 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
         let index = open.iter().position(|x| Node::compare(x, &current)).unwrap();
         open.remove(index);
 
-        //'f: for index in 0..open.len()
-        //{
-        //    if open.len() == 0  || index == 0
-        //    {
-        //        continue 'f;
-        //    }
-
-        //    println!("husat");
-        //    if Node::compare_location(&current, &open[index])
-        //    {
-        //        open.remove(index);
-        //    }
-        //}
 
         // add to closed list
         closed.push(Node::calculate(current.location, start, end, current.path_to_parrent.clone()));
