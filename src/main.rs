@@ -157,7 +157,7 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
         // node with the lowest f cost
         for node in &open
         {
-            if node.f_cost < current.f_cost //|| square(current.f_cost as i32) == square(node.h_cost as i32) + square(node.g_cost as i32)
+            if node.f_cost < current.f_cost 
             {
                 current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
             }
