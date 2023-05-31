@@ -29,7 +29,7 @@ pub fn main() -> Result<(), String> {
     ];
 
     let mut start = Point::new(1, 1);
-    let end = Point::new(5, 1);
+    let end = Point::new(7, 1);
 
     let mut event_pump = sdl_context.event_pump()?;
 
@@ -134,7 +134,7 @@ impl Node
     }
     fn compare(node1: &Node, node2: &Node) -> bool
     {
-        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.location.x == node2.location.x && node1.location.y == node1.location.y
+        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.location.x == node2.location.x && node1.location.y == node1.location.y && node1.path_to_parrent == node2.path_to_parrent
     }
 }
 
@@ -178,8 +178,7 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
         }
 
         // add to closed list
-        closed.push(Node::calculate(Point::new(current.location.x, current.location.y), start, end, current.path_to_parrent.clone()));
-
+        closed.push(Node::calculate(current.location, start, end, current.path_to_parrent.clone()));
 
 
         if current.location == end
@@ -200,7 +199,6 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
 
         vec_n_2 = current.path_to_parrent.clone();
         vec_n_2.push(4);
-
 
         vec_n_3 = current.path_to_parrent.clone();
         vec_n_3.push(3);
