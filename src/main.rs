@@ -21,15 +21,15 @@ pub fn main() -> Result<(), String> {
 
     let tile_map = vec![
         vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 1, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![1, 1, 1, 1, 1, 1, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 1, 1, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
     ];
 
     let mut start = Point::new(1, 1);
-    let end = Point::new(5, 5);
+    let end = Point::new(7, 1);
 
     let mut event_pump = sdl_context.event_pump()?;
 
@@ -226,7 +226,8 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
                 }
             }
 
-            if neighbour.location.y < 0 || neighbour.location.x < 0 || neighbour.location.y >= 6 || neighbour.location.x >= 8
+            if neighbour.location.y < 0 || neighbour.location.x < 0 ||
+                neighbour.location.y >= 6 || neighbour.location.x > 7
             {
                 continue 'l;
             }
