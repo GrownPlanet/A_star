@@ -21,19 +21,20 @@ pub fn main() -> Result<(), String> {
 
     let tile_map = vec![
         vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 1, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 1, 1, 1, 1, 1, 1],
+        vec![0, 1, 0, 1, 0, 0, 0, 0],
+        vec![0, 1, 0, 1, 0, 0, 0, 0],
+        vec![0, 1, 1, 1, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
     ];
 
-    let mut start = Point::new(1, 1);
-    let end = Point::new(7, 1);
+    let mut start = Point::new(5, 5);
+    let end = Point::new(0, 0);
 
     let mut event_pump = sdl_context.event_pump()?;
 
     let a = path_finder(start, end, &tile_map);
+    //let a = vec![];
 
     let mut index = 0;
 
@@ -134,7 +135,11 @@ impl Node
     }
     fn compare(node1: &Node, node2: &Node) -> bool
     {
-        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.location.x == node2.location.x && node1.location.y == node1.location.y && node1.path_to_parrent == node2.path_to_parrent
+        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.f_cost == node2.f_cost && node1.location.x == node2.location.x && node1.location.y == node1.location.y && node1.path_to_parrent == node2.path_to_parrent
+    }
+    fn compare_location(node1: &Node, node2: &Node) -> bool
+    {
+        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.f_cost == node2.f_cost && node1.location.x == node2.location.x && node1.location.y == node1.location.y //&& node1.path_to_parrent == node2.path_to_parrent
     }
 }
 
@@ -218,7 +223,7 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
             // check if neighbour is in closed
             for close in &closed
             {
-                if Node::compare(&neighbour, close)
+                if Node::compare_location(&neighbour, close)
                 {
                     continue 'l;
                 }
