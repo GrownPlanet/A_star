@@ -1,17 +1,22 @@
 extern crate sdl2;
 
 use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::{Rect, Point};
+use std::collections::HashMap;
 use std::time::Duration;
 
 pub fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
+    let tile_size = 64;
+
+    let screen_width = 13 * tile_size;
+    let screen_height = 9 * tile_size;
+
     let window = video_subsystem
-        .window("spaghetti code go brrrrr", 800, 600)
+        .window("A* algoritm", screen_width, screen_height)
         .position_centered()
         .opengl()
         .build()
@@ -19,230 +24,127 @@ pub fn main() -> Result<(), String> {
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
 
-    let tile_map = vec![
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![1, 1, 1, 1, 1, 1, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 1, 1, 1, 1, 1, 1, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0],
-    ];
-
-    let mut start = Point::new(1, 1);
-    let end = Point::new(5, 5);
-
     let mut event_pump = sdl_context.event_pump()?;
 
-    let a = path_finder(start, end, &tile_map);
+    let tile_map = vec![
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    let tile_colors = HashMap::from([
+        (0, Color::RGB(255, 255, 255)),
+        (1, Color::RGB(45, 45, 45)),
+    ]);
 
-    let mut index = 0;
+    let solid_tiles = [1];
 
-    for v in &a
-    {
-        print!("{} ", v);
-    }
-    println!();
+    let start = Point::new(1, 1);
+    let end = Point::new(5, 5);
 
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'running,
+                Event::Quit { .. } => break 'running,
                 _ => {}
             }
         }
 
-        // drawing the tilemap
-        for y in 0..6
+        for x in 0..( screen_width / tile_size )
         {
-            for x in 0..8
+            for y in 0..( screen_height / tile_size )
             {
-                match tile_map[y][x] {
-                   0 => canvas.set_draw_color(Color::RGB(255, 255, 255)),
-                   1 => canvas.set_draw_color(Color::RGB(45, 45, 45)),
-                   _ => (),
-                }
-                canvas.fill_rect(Rect::new(x as i32 * 100, y as i32 * 100, 100, 100))?;
+                canvas.set_draw_color( tile_colors[ &tile_map[ y as usize ][ x as usize ]]);
+                canvas.fill_rect( Rect::new((x * tile_size) as i32, (y * tile_size) as i32, tile_size, tile_size) )?;
             }
-        }
-
-        canvas.set_draw_color(Color::RGB(255, 0, 0));
-        canvas.fill_rect(Rect::new(end.x * 100, end.y * 100, 100, 100))?;
-
-        canvas.set_draw_color(Color::RGB(255, 255, 0));
-        canvas.fill_rect(Rect::new(start.x * 100, start.y * 100, 100, 100))?;
-
-        if index < a.len()
-        {
-            match a[index] {
-                1 => start.y -= 1,
-                2 => start.x += 1,
-                3 => start.y += 1,
-                4 => start.x -= 1,
-                _ => (),
-            }
-            index += 1;
         }
 
         canvas.set_draw_color(Color::RGB(0, 0, 0));
-        for x in 0..8
+        for x in 0..( screen_width / tile_size )
         {
-            canvas.draw_line(Point::new(x * 100, 0), Point::new(x*100, 600))?;
+            canvas.draw_line(Point::new((x * tile_size) as i32, 0), Point::new((x * tile_size) as i32, (screen_height) as i32))?;
         }
-        for y in 0..8
+        for y in 0..( screen_height / tile_size )
         {
-            canvas.draw_line(Point::new(0, y*100), Point::new(800, y*100))?;
+            canvas.draw_line(Point::new(0, (y * tile_size) as i32), Point::new((screen_width) as i32, (y * tile_size) as i32))?;
         }
-        
+
         canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32));
-        // The rest of the game loop goes here...
+        
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
     }
 
     Ok(())
 }
 
-fn square(a: i32) -> i32 { a * a }
-
-struct Node
+pub mod path_finder
 {
-    pub location: Point,
-    pub h_cost: u32, // how far away from end
-    pub f_cost: u32, // g and h cost combined 
-    pub path_to_parrent: Vec<u32>,
-}
+    extern crate sdl2;
 
-impl Node
-{
-    fn calculate(point: Point, start: Point, end: Point, path_to_parrent: Vec<u32>) -> Node
+    use sdl2::rect::Point;
+
+    fn square_i32( num: i32 ) -> i32 { num * num }
+
+    struct Node
     {
-        let g_cost = (square(point.x - start.x) as f32 + square(point.y - start.y) as f32).sqrt() as u32;
-        let h_cost = (square(point.x - end.x) as f32 + square(point.y - end.y) as f32).sqrt() as u32;
-        let f_cost = g_cost + h_cost;
-        return Node
+        location: Point,
+        h_cost: u32, // distance to the end
+        f_cost: u32, // g (distance to the start) and h cost combined 
+        path_to_parrent: Vec<u32>,
+    }
+    
+    impl Node
+    {
+        fn calculate( location: Point, start: Point, end: Point, path_to_parrent: Vec<u32> ) -> Node
         {
-            location: point,
-            h_cost,
-            f_cost,
-            path_to_parrent,
-        };
-    }
-    fn compare(node1: &Node, node2: &Node) -> bool
-    {
-        node1.location.x == node2.location.x && node1.location.y == node2.location.y && node1.path_to_parrent == node2.path_to_parrent
-    }
-    fn compare_location(node1: &Node, node2: &Node) -> bool
-    {
-        node1.location.x == node2.location.x && node1.location.y == node2.location.y
-    }
-}
+            let g_cost =  ( ((square_i32(location.x - start.x) + square_i32(location.y - start.y)) as f32).sqrt() ) as u32;
+            let h_cost =  ( ((square_i32(location.x - end.x) + square_i32(location.y - end.y)) as f32).sqrt() ) as u32;
+            let f_cost = g_cost + h_cost;
 
-fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
-{
-    let mut open: Vec<Node> = vec![];
-    let mut closed: Vec<Node> = vec![];
-
-    open.push(Node::calculate(start, start, end, vec![]));
-
-    let mut current;
-
-    let mut vec_n_1: Vec<u32>;
-    let mut vec_n_2: Vec<u32>;
-    let mut vec_n_3: Vec<u32>;
-    let mut vec_n_4: Vec<u32>;
-
-    loop {
-        current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent.clone());
-        // node with the lowest f cost
-        for node in &open
-        {
-            if node.f_cost < current.f_cost 
+            return Node
             {
-                current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
-            }
-            else if node.h_cost < current.h_cost
-            {
-                current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
-            }
+                location,
+                h_cost,
+                f_cost,
+                path_to_parrent,
+            };
         }
 
-        // remove from open list
-        let index = open.iter().position(|x| Node::compare(x, &current)).unwrap();
-        open.remove(index);
-
-
-        // add to closed list
-        closed.push(Node::calculate(current.location, start, end, current.path_to_parrent.clone()));
-
-        if current.location == end
+        fn compare(node1: &Node, node2: &Node) -> bool
         {
-            let mut p = vec![];
-
-            for v in 0..current.path_to_parrent.len()
-            {
-                p.push(current.path_to_parrent[v]);
-            }
-
-            return p;
+            node1.location == node2.location && node1.path_to_parrent == node2.path_to_parrent
         }
+    }
 
-        // compare to neighbours
-        vec_n_1 = current.path_to_parrent.clone();
-        vec_n_1.push(2);
+    pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) //-> Result<String, Vec<u32>>
+    {
+        // list with values that can be used
+        let mut open: Vec<Node> = Vec::new();
+        // list with used values
+        let mut closed: Vec<Node> = Vec::new();
 
-        vec_n_2 = current.path_to_parrent.clone();
-        vec_n_2.push(4);
+        // putting the start node in open
+        open.push(Node::calculate(start, start, end, Vec::new()));
 
-        vec_n_3 = current.path_to_parrent.clone();
-        vec_n_3.push(3);
-
-        vec_n_4 = current.path_to_parrent.clone();
-        vec_n_4.push(1);
+        // the current value
+        let mut current: Node;
         
-        let neightbours = [
-            Node::calculate(Point::new(current.location.x + 1, current.location.y), start, end, vec_n_1),
-            Node::calculate(Point::new(current.location.x - 1, current.location.y), start, end, vec_n_2),
-            Node::calculate(Point::new(current.location.x, current.location.y + 1), start, end, vec_n_3),
-            Node::calculate(Point::new(current.location.x, current.location.y - 1), start, end, vec_n_4),
-        ];
+        // the paths of neighbours of current
+        let mut path_to_current_1: Vec<u32>;
+        let mut path_to_current_2: Vec<u32>;
+        let mut path_to_current_3: Vec<u32>;
+        let mut path_to_current_4: Vec<u32>;
 
-        'l: for neighbour in neightbours
+        // the main loop
+        loop
         {
-            // check if neighbour is in closed
-            for close in &closed
-            {
-                if Node::compare_location(&neighbour, close)
-                {
-                    continue 'l;
-                }
-            }
-
-            if neighbour.location.y < 0 || neighbour.location.x < 0 ||
-                neighbour.location.y >= 6 || neighbour.location.x > 7
-            {
-                continue 'l;
-            }
-
-            if tile_map[neighbour.location.y as usize][neighbour.location.x as usize] == 1
-            {
-                continue 'l;
-            }
-
-            for node in &open
-            {
-                if Node::compare_location(&neighbour, node)
-                {
-                    if neighbour.f_cost > node.f_cost
-                    {
-                        continue 'l;
-                    }
-                }
-            }
-
-            open.push(neighbour);
+            // setting the current value
+            current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent.clone());
         }
     }
 }
