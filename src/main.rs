@@ -134,7 +134,7 @@ impl Node
     }
     fn compare(node1: &Node, node2: &Node) -> bool
     {
-        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.f_cost == node2.f_cost && node1.location.x == node2.location.x && node1.location.y == node1.location.y && node1.path_to_parrent == node2.path_to_parrent
+        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.f_cost == node2.f_cost && node1.location.x == node2.location.x && node1.location.y == node2.location.y && node1.path_to_parrent == node2.path_to_parrent
     }
     fn compare_location(node1: &Node, node2: &Node) -> bool
     {
@@ -172,7 +172,7 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
         }
 
         // remove from open list
-        let index = open.iter().position(|x| Node::compare_location(x, &current)).unwrap();
+        let index = open.iter().position(|x| Node::compare(x, &current)).unwrap();
         open.remove(index);
 
         //'f: for index in 0..open.len()
