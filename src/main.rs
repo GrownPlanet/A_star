@@ -21,11 +21,11 @@ pub fn main() -> Result<(), String> {
 
     let tile_map = vec![
         vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 1, 1, 1, 1, 0],
-        vec![0, 0, 0, 1, 0, 0, 0, 0],
-        vec![0, 1, 0, 1, 0, 0, 0, 0],
-        vec![0, 1, 1, 1, 0, 0, 0, 0],
-        vec![0, 0, 0, 1, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![1, 1, 1, 1, 1, 1, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 1, 1, 1, 1, 1, 1, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
     ];
 
     let mut start = Point::new(1, 1);
@@ -110,7 +110,6 @@ fn square(a: i32) -> i32 { a * a }
 struct Node
 {
     pub location: Point,
-    pub g_cost: u32, // how far away from start
     pub h_cost: u32, // how far away from end
     pub f_cost: u32, // g and h cost combined 
     pub path_to_parrent: Vec<u32>,
@@ -126,7 +125,6 @@ impl Node
         return Node
         {
             location: point,
-            g_cost,
             h_cost,
             f_cost,
             path_to_parrent,
@@ -134,7 +132,7 @@ impl Node
     }
     fn compare(node1: &Node, node2: &Node) -> bool
     {
-        node1.g_cost == node2.g_cost && node1.h_cost == node2.h_cost && node1.f_cost == node2.f_cost && node1.location.x == node2.location.x && node1.location.y == node2.location.y && node1.path_to_parrent == node2.path_to_parrent
+        node1.location.x == node2.location.x && node1.location.y == node2.location.y && node1.path_to_parrent == node2.path_to_parrent
     }
     fn compare_location(node1: &Node, node2: &Node) -> bool
     {
@@ -178,7 +176,6 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
 
         // add to closed list
         closed.push(Node::calculate(current.location, start, end, current.path_to_parrent.clone()));
-
 
         if current.location == end
         {
@@ -236,14 +233,15 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
 
             for node in &open
             {
-                if Node::compare(&neighbour, node)
+                if Node::compare_location(&neighbour, node)
                 {
                     if neighbour.f_cost > node.f_cost
                     {
-                        break 'l;
+                        continue 'l;
                     }
                 }
             }
+
             open.push(neighbour);
         }
     }
