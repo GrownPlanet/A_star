@@ -21,7 +21,7 @@ pub fn main() -> Result<(), String> {
 
     let tile_map = vec![
         vec![0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 1, 0, 0, 0],
+        vec![0, 0, 0, 1, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0],
@@ -29,7 +29,7 @@ pub fn main() -> Result<(), String> {
     ];
 
     let mut start = Point::new(1, 1);
-    let end = Point::new(7, 1);
+    let end = Point::new(5, 1);
 
     let mut event_pump = sdl_context.event_pump()?;
 
@@ -161,7 +161,7 @@ fn path_finder(start: Point, end: Point, tile_map: &Vec<Vec<u32>>) -> Vec<u32>
             {
                 current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
             }
-            else if false //node.h_cost < current.h_cost
+            else if node.h_cost < current.h_cost
             {
                 current = Node::calculate(Point::new(node.location.x, node.location.y), start, end, node.path_to_parrent.clone());
             }
