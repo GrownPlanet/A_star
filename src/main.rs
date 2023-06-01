@@ -27,15 +27,15 @@ pub fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let tile_map = vec![
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        vec![0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0],
+        vec![0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
     ];
     let tile_colors = HashMap::from([
         (0, Color::RGB(255, 255, 255)),
@@ -173,6 +173,11 @@ pub mod path_finder
         // the main loop
         loop
         {
+            // check if there is no path 
+            if open.len() == 0
+            {
+                return vec![0];
+            }
             // setting the current value to the lowest value in open
             current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent.clone());
 
