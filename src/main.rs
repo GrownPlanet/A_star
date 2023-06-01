@@ -31,7 +31,7 @@ pub fn main() -> Result<(), String> {
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -46,6 +46,17 @@ pub fn main() -> Result<(), String> {
 
     let start = Point::new(1, 1);
     let end = Point::new(5, 5);
+
+    let mut path_r = Rect::new(start.x * tile_size as i32, start.y * tile_size as i32, tile_size, tile_size);
+    let mut index = 0;
+
+    let path = path_finder::path_finder(start, end, &tile_map, &solid_tiles);
+
+    for v in &path
+    {
+        print!("{} ", v);
+    }
+    println!();
 
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -64,6 +75,15 @@ pub fn main() -> Result<(), String> {
             }
         }
 
+        canvas.set_draw_color(Color::RGB(255, 0, 0));
+        canvas.fill_rect( Rect::new(end.x * tile_size as i32, end.y * tile_size as i32, tile_size, tile_size) )?;
+
+        canvas.set_draw_color(Color::RGB(0, 255, 0));
+        canvas.fill_rect( Rect::new(start.x * tile_size as i32, start.y * tile_size as i32, tile_size, tile_size) )?;
+
+        canvas.set_draw_color(Color::RGB(255, 0, 255));
+        canvas.fill_rect(path_r)?;
+
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         for x in 0..( screen_width / tile_size )
         {
@@ -75,8 +95,20 @@ pub fn main() -> Result<(), String> {
         }
 
         canvas.present();
+
+        if index < path.len()
+        {
+            match path[index] {
+                1 => path_r.y -= tile_size as i32,
+                2 => path_r.x += tile_size as i32,
+                3 => path_r.y += tile_size as i32,
+                4 => path_r.x -= tile_size as i32,
+                _ => (),
+            }
+            index += 1;
+        }
         
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 2));
     }
 
     Ok(())
@@ -93,8 +125,7 @@ pub mod path_finder
     struct Node
     {
         location: Point,
-        h_cost: u32, // distance to the end
-        f_cost: u32, // g (distance to the start) and h cost combined 
+        f_cost: u32, // g (distance to the start) and h (distance to the end) cost combined 
         path_to_parrent: Vec<u32>,
     }
     
@@ -109,7 +140,6 @@ pub mod path_finder
             return Node
             {
                 location,
-                h_cost,
                 f_cost,
                 path_to_parrent,
             };
@@ -139,8 +169,6 @@ pub mod path_finder
         let mut path_to_current_2: Vec<u32>;
         let mut path_to_current_3: Vec<u32>;
         let mut path_to_current_4: Vec<u32>;
-
-        let mut neighbours = Vec::new();
 
         // the main loop
         loop
@@ -182,15 +210,15 @@ pub mod path_finder
             path_to_current_4.push(1);
 
             // creating the neighbours 
-            neighbours.clear();
-
-            neighbours.push(Node::calculate(Point::new(current.location.x + 1, current.location.y), start, end, path_to_current_1));
-            neighbours.push(Node::calculate(Point::new(current.location.x - 1, current.location.y), start, end, path_to_current_2));
-            neighbours.push(Node::calculate(Point::new(current.location.x, current.location.y + 1), start, end, path_to_current_3));
-            neighbours.push(Node::calculate(Point::new(current.location.x, current.location.y - 1), start, end, path_to_current_4));
+            let neighbours = [
+                Node::calculate(Point::new(current.location.x + 1, current.location.y), start, end, path_to_current_1),
+                Node::calculate(Point::new(current.location.x - 1, current.location.y), start, end, path_to_current_2),
+                Node::calculate(Point::new(current.location.x, current.location.y + 1), start, end, path_to_current_3),
+                Node::calculate(Point::new(current.location.x, current.location.y - 1), start, end, path_to_current_4),
+            ];
 
             //
-            'f: for neighbour in &neighbours
+            'f: for neighbour in neighbours
             {
                 // checking if the neighbour is closed
                 for node in &closed
