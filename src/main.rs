@@ -121,7 +121,7 @@ pub mod path_finder
         }
     }
 
-    pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) //-> Result<String, Vec<u32>>
+    pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) -> Vec<u32>
     {
         // list with values that can be used
         let mut open: Vec<Node> = Vec::new();
@@ -140,11 +140,84 @@ pub mod path_finder
         let mut path_to_current_3: Vec<u32>;
         let mut path_to_current_4: Vec<u32>;
 
+        let mut neighbours = Vec::new();
+
         // the main loop
         loop
         {
-            // setting the current value
+            // setting the current value to the lowest value in open
             current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent.clone());
+
+            for node in &open
+            {
+                if node.f_cost < current.f_cost
+                {
+                    current = Node::calculate(node.location, start, end, node.path_to_parrent.clone());
+                }
+            }
+
+            // remove the current node from open
+            let node_index = open.iter().position(|n| Node::compare(n, &current)).unwrap();
+            open.remove(node_index);
+
+            // add open to the closed list
+            closed.push(Node::calculate(current.location, start, end, current.path_to_parrent.clone()));
+
+            if current.location == end
+            {
+                return current.path_to_parrent;
+            }
+
+            // creating the neighbours of current paths
+            path_to_current_1 = current.path_to_parrent.clone();
+            path_to_current_1.push(2);
+
+            path_to_current_2 = current.path_to_parrent.clone();
+            path_to_current_2.push(4);
+
+            path_to_current_3 = current.path_to_parrent.clone();
+            path_to_current_3.push(3);
+
+            path_to_current_4 = current.path_to_parrent.clone();
+            path_to_current_4.push(1);
+
+            // creating the neighbours 
+            neighbours.clear();
+
+            neighbours.push(Node::calculate(Point::new(current.location.x + 1, current.location.y), start, end, path_to_current_1));
+            neighbours.push(Node::calculate(Point::new(current.location.x - 1, current.location.y), start, end, path_to_current_2));
+            neighbours.push(Node::calculate(Point::new(current.location.x, current.location.y + 1), start, end, path_to_current_3));
+            neighbours.push(Node::calculate(Point::new(current.location.x, current.location.y - 1), start, end, path_to_current_4));
+
+            //
+            'f: for neighbour in &neighbours
+            {
+                // checking if the neighbour is closed
+                for node in &closed
+                {
+                    if node.location == neighbour.location
+                    {
+                        continue 'f;
+                    }
+                }
+
+                if neighbour.location.y < 0 || neighbour.location.x < 0 ||
+                    neighbour.location.y >= tile_map.len() as i32 || neighbour.location.x >= tile_map[0].len() as i32
+                {
+                    continue 'f;
+                }
+
+                // check if tile is solid 
+                for val in solid_tiles
+                {
+                    if &tile_map[neighbour.location.y as usize][neighbour.location.x as usize] == val
+                    {
+                        continue 'f;
+                    }
+                }
+
+                open.push(neighbour);
+            }
         }
     }
 }
