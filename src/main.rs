@@ -37,6 +37,7 @@ pub fn main() -> Result<(), String> {
         vec![0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
     ];
+
     let tile_colors = HashMap::from([
         (0, Color::RGB(255, 255, 255)),
         (1, Color::RGB(45, 45, 45)),
