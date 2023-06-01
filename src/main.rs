@@ -27,7 +27,7 @@ pub fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let tile_map = vec![
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1],
         vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
@@ -50,7 +50,7 @@ pub fn main() -> Result<(), String> {
     let mut path_r = Rect::new(start.x * tile_size as i32, start.y * tile_size as i32, tile_size, tile_size);
     let mut index = 0;
 
-    let path = path_finder::path_finder(start, end, &tile_map, &solid_tiles);
+    let path = path_finder::path_finder(start, end, &tile_map, &solid_tiles).unwrap();
 
     for v in &path
     {
@@ -151,7 +151,7 @@ pub mod path_finder
         }
     }
 
-    pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) -> Vec<u32>
+    pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) -> Result<Vec<u32>, String>
     {
         // list with values that can be used
         let mut open: Vec<Node> = Vec::new();
@@ -176,7 +176,7 @@ pub mod path_finder
             // check if there is no path 
             if open.len() == 0
             {
-                return vec![0];
+                return Err(String::from("impossible path"));
             }
             // setting the current value to the lowest value in open
             current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent.clone());
@@ -198,7 +198,7 @@ pub mod path_finder
 
             if current.location == end
             {
-                return current.path_to_parrent;
+                return Ok(current.path_to_parrent);
             }
 
             // creating the neighbours of current paths
