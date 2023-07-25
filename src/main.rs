@@ -1,4 +1,3 @@
-// test 1234
 extern crate sdl2;
 
 use sdl2::event::Event;
