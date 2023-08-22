@@ -3,6 +3,7 @@ extern crate sdl2;
 use sdl2::event::Event;
 use sdl2::pixels::Color;
 use sdl2::rect::{Rect, Point};
+use sdl2::keyboard::Keycode;
 use std::collections::HashMap;
 use std::time::Duration;
 
@@ -61,10 +62,15 @@ pub fn main() -> Result<(), String> {
     }
     println!();
 
+    let mut playing = 1;
+
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'running,
+                Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+                    playing *= -1;
+                }
                 _ => {}
             }
         }
@@ -99,7 +105,7 @@ pub fn main() -> Result<(), String> {
 
         canvas.present();
 
-        if index < path.len()
+        if index < path.len() && playing == 1
         {
             match path[index] {
                 1 => path_r.y -= tile_size as i32,
@@ -111,7 +117,7 @@ pub fn main() -> Result<(), String> {
             index += 1;
         }
         
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 15));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 2));
     }
 
     Ok(())
