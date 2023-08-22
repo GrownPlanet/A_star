@@ -53,7 +53,7 @@ pub fn main() -> Result<(), String> {
     let mut path_r = Rect::new(start.x * tile_size as i32, start.y * tile_size as i32, tile_size, tile_size);
     let mut index = 0;
 
-    let path = path_finder::path_finder(start, end, &tile_map, &solid_tiles).unwrap();
+    let path = path_finder::path_finder((start.x, start.y), (end.x, end.y), &tile_map, &solid_tiles).unwrap();
 
     for v in &path
     {

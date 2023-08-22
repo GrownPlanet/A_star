@@ -1,9 +1,28 @@
-
-extern crate sdl2;
-
-use sdl2::rect::Point;
-
 fn square_i32( num: i32 ) -> i32 { num * num }
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Point {
+    pub fn new(x: i32, y: i32) -> Point {
+        Point {x, y}
+    }
+
+    pub fn clone(&self) -> Point {
+        Point {
+            x: self.x, 
+            y: self.y,
+        }
+    }
+}
+
+impl PartialEq for Point {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
 
 struct Node
 {
@@ -14,7 +33,7 @@ struct Node
 
 impl Node
 {
-    fn calculate( location: Point, start: Point, end: Point, path_to_parrent: Vec<u32> ) -> Node
+    fn calculate( location: &Point, start: &Point, end: &Point, path_to_parrent: Vec<u32> ) -> Node
     {
         let g_cost =  ( ((square_i32(location.x - start.x) + square_i32(location.y - start.y)) as f32).sqrt() ) as u32;
         let h_cost =  ( ((square_i32(location.x - end.x) + square_i32(location.y - end.y)) as f32).sqrt() ) as u32;
@@ -22,7 +41,7 @@ impl Node
 
         return Node
         {
-            location,
+            location: location.clone(),
             f_cost,
             path_to_parrent,
         };
@@ -34,15 +53,20 @@ impl Node
     }
 }
 
-pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) -> Result<Vec<u32>, String>
+pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) -> Result<Vec<u32>, String>
 {
+    let start = Point::new(start.0, start.1);
+    let end = Point::new(end.0, end.1);
+    println!("start: {}, {}", start.x, start.y);
+    println!("end: {}, {}", end.x, end.y);
+
     // list with values that can be used
     let mut open: Vec<Node> = Vec::new();
     // list with used values
     let mut closed: Vec<Node> = Vec::new();
 
     // putting the start node in open
-    open.push(Node::calculate(start, start, end, Vec::new()));
+    open.push(Node::calculate(&start, &start, &end, Vec::new()));
 
     // the current value
     let mut current: Node;
@@ -62,13 +86,13 @@ pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_ti
             return Err(String::from("impossible path"));
         }
         // setting the current value to the lowest value in open
-        current = Node::calculate(open[0].location, start, end, open[0].path_to_parrent.clone());
+        current = Node::calculate(&open[0].location, &start, &end, open[0].path_to_parrent.clone());
 
         for node in &open
         {
             if node.f_cost < current.f_cost
             {
-                current = Node::calculate(node.location, start, end, node.path_to_parrent.clone());
+                current = Node::calculate(&node.location, &start, &end, node.path_to_parrent.clone());
             }
         }
 
@@ -77,7 +101,7 @@ pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_ti
         open.remove(node_index);
 
         // add open to the closed list
-        closed.push(Node::calculate(current.location, start, end, current.path_to_parrent.clone()));
+        closed.push(Node::calculate(&current.location, &start, &end, current.path_to_parrent.clone()));
 
         if current.location == end
         {
@@ -97,12 +121,13 @@ pub fn path_finder (start: Point, end: Point, tile_map: &Vec<Vec<u32>>, solid_ti
         path_to_current_4 = current.path_to_parrent.clone();
         path_to_current_4.push(1);
 
+
         // creating the neighbours 
         let neighbours = [
-            Node::calculate(Point::new(current.location.x + 1, current.location.y), start, end, path_to_current_1),
-            Node::calculate(Point::new(current.location.x - 1, current.location.y), start, end, path_to_current_2),
-            Node::calculate(Point::new(current.location.x, current.location.y + 1), start, end, path_to_current_3),
-            Node::calculate(Point::new(current.location.x, current.location.y - 1), start, end, path_to_current_4),
+            Node::calculate(&Point::new(current.location.x + 1, current.location.y), &start, &end, path_to_current_1),
+            Node::calculate(&Point::new(current.location.x - 1, current.location.y), &start, &end, path_to_current_2),
+            Node::calculate(&Point::new(current.location.x, current.location.y + 1), &start, &end, path_to_current_3),
+            Node::calculate(&Point::new(current.location.x, current.location.y - 1), &start, &end, path_to_current_4),
         ];
 
         //
