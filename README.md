@@ -1,7 +1,6 @@
 # A_star
 
-A* algoritm implemented with rust
-graphics implemented with with sdl2
+A* algoritm implemented with rust, graphics implemented with with sdl2
 
 ## how to run
 
