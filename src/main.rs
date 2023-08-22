@@ -62,14 +62,18 @@ pub fn main() -> Result<(), String> {
     }
     println!();
 
-    let mut playing = 1;
+    let mut playing = -1;
 
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'running,
                 Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
-                    playing *= -1;
+                    if playing == -1 {
+                        playing = 1;
+                        path_r = Rect::new(start.x * tile_size as i32, start.y * tile_size as i32, tile_size, tile_size);
+                        index = 0;
+                    }
                 }
                 _ => {}
             }
@@ -94,6 +98,7 @@ pub fn main() -> Result<(), String> {
         canvas.fill_rect(path_r)?;
 
         canvas.set_draw_color(Color::RGB(0, 0, 0));
+
         for x in 0..( screen_width / tile_size )
         {
             canvas.draw_line(Point::new((x * tile_size) as i32, 0), Point::new((x * tile_size) as i32, (screen_height) as i32))?;
@@ -115,6 +120,8 @@ pub fn main() -> Result<(), String> {
                 _ => (),
             }
             index += 1;
+        } else {
+            playing = -1
         }
         
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 10));
