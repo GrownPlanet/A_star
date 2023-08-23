@@ -59,6 +59,7 @@ impl Node {
 }
 
 pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) -> Result<Vec<u32>, String> {
+    // create start and end points 
     let start = Point::new(start.0, start.1);
     let end = Point::new(end.0, end.1);
 
@@ -73,11 +74,10 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
     // the current value
     let mut current: Node;
 
-    // the paths of neighbours of current
-    let mut path_to_current_1: Vec<u32>;
-    let mut path_to_current_2: Vec<u32>;
-    let mut path_to_current_3: Vec<u32>;
-    let mut path_to_current_4: Vec<u32>;
+    let mut path_to_parrent: Vec<u32>;
+
+    let mut location: Point;
+    let mut neighbour: Node;
 
     // the main loop
     loop {
@@ -102,47 +102,46 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
             return Ok(current.path_to_parrent);
         }
 
-        // creating the neighbours of current paths
-        path_to_current_1 = current.path_to_parrent.clone();
-        path_to_current_1.push(2);
+        // loop over all the neighbours 
+        for (x_dir, y_dir) in [(1, 0), (-1, 0), (0, 1), (0, -1)].iter() {
+            // set the location
+            location = Point::new(current.location.x + x_dir, current.location.y + y_dir);
 
-        path_to_current_2 = current.path_to_parrent.clone();
-        path_to_current_2.push(4);
-
-        path_to_current_3 = current.path_to_parrent.clone();
-        path_to_current_3.push(3);
-
-        path_to_current_4 = current.path_to_parrent.clone();
-        path_to_current_4.push(1);
-
-        // creating the neighbours 
-        let neighbours = [
-            Node::calculate(&Point::new(current.location.x + 1, current.location.y), &start, &end, path_to_current_1),
-            Node::calculate(&Point::new(current.location.x - 1, current.location.y), &start, &end, path_to_current_2),
-            Node::calculate(&Point::new(current.location.x, current.location.y + 1), &start, &end, path_to_current_3),
-            Node::calculate(&Point::new(current.location.x, current.location.y - 1), &start, &end, path_to_current_4),
-        ];
-
-        'f: for neighbour in neighbours {
-            // checking if the neighbour is closed
-            for node in &closed {
-                if node.location == neighbour.location {
-                    continue 'f;
-                }
+            // check if location is out of bounds
+            if  location.y < 0 
+                || location.x < 0 
+                || location.y >= tile_map.len() as i32
+                || location.x >= tile_map[0].len() as i32
+            {
+                    continue;
             }
 
-            if neighbour.location.y < 0 || neighbour.location.x < 0 ||
-                neighbour.location.y >= tile_map.len() as i32 || neighbour.location.x >= tile_map[0].len() as i32 {
-                    continue 'f;
-                }
+            // check if location is on a solid tile
+            if solid_tiles.contains(&tile_map[location.y as usize][location.x as usize]) {
+                continue;
+            }
+            
+            // clone the path to parrent vector
+            path_to_parrent = current.path_to_parrent.clone();
 
-            // check if tile is solid 
-            for val in solid_tiles {
-                if &tile_map[neighbour.location.y as usize][neighbour.location.x as usize] == val {
-                    continue 'f;
-                }
+            // add the right number
+            match (x_dir, y_dir) {
+                (1, 0) => path_to_parrent.push(2),
+                (-1,0) => path_to_parrent.push(4),
+                (0, 1) => path_to_parrent.push(3),
+                (0,-1) => path_to_parrent.push(1),
+                _ => return Err(String::from("Can't find direction")),
             }
 
+            // create the neighbour
+            neighbour = Node::calculate(&location.clone(), &start, &end, path_to_parrent);
+
+            // check if the neighbour is in closed
+            if closed.iter().any(|node| neighbour.location == node.location) {
+                continue;
+            }
+
+            // add the neighbour to open
             open.push(neighbour);
         }
     }
