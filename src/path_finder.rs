@@ -1,4 +1,6 @@
-fn square_i32( num: i32 ) -> i32 { num * num }
+fn square_i32( num: i32 ) -> i32 {
+    num * num
+}
 
 struct Point {
     x: i32,
@@ -6,11 +8,11 @@ struct Point {
 }
 
 impl Point {
-    pub fn new(x: i32, y: i32) -> Point {
+    fn new(x: i32, y: i32) -> Point {
         Point {x, y}
     }
 
-    pub fn clone(&self) -> Point {
+    fn clone(&self) -> Point {
         Point {
             x: self.x, 
             y: self.y,
@@ -46,6 +48,14 @@ impl Node {
     fn compare(node1: &Node, node2: &Node) -> bool {
         node1.location == node2.location && node1.path_to_parrent == node2.path_to_parrent
     }
+
+    fn clone(&self) -> Node {
+        Node {
+            location: self.location.clone(), 
+            f_cost: self.f_cost,
+            path_to_parrent: self.path_to_parrent.clone(),
+        }
+    }
 }
 
 pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>, solid_tiles: &[u32]) -> Result<Vec<u32>, String> {
@@ -76,6 +86,7 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
             return Err(String::from("impossible path"));
         }
         // setting the current value to the lowest value in open
+        /*
         current = Node::calculate(&open[0].location, &start, &end, open[0].path_to_parrent.clone());
 
         for node in &open {
@@ -83,10 +94,16 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
                 current = Node::calculate(&node.location, &start, &end, node.path_to_parrent.clone());
             }
         }
+        */
+
+        current = open
+            .iter()
+            .min_by_key(|node| node.f_cost)
+            .unwrap()
+            .clone();
 
         // remove the current node from open
-        let node_index = open.iter().position(|n| Node::compare(n, &current)).unwrap();
-        open.remove(node_index);
+        open.retain(|node| !Node::compare(&current, node));
 
         // add open to the closed list
         closed.push(Node::calculate(&current.location, &start, &end, current.path_to_parrent.clone()));
