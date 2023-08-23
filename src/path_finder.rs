@@ -86,16 +86,6 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
             return Err(String::from("impossible path"));
         }
         // setting the current value to the lowest value in open
-        /*
-        current = Node::calculate(&open[0].location, &start, &end, open[0].path_to_parrent.clone());
-
-        for node in &open {
-            if node.f_cost < current.f_cost {
-                current = Node::calculate(&node.location, &start, &end, node.path_to_parrent.clone());
-            }
-        }
-        */
-
         current = open
             .iter()
             .min_by_key(|node| node.f_cost)
