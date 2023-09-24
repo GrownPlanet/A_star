@@ -79,6 +79,18 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
     let mut location: Point;
     let mut neighbour: Node;
 
+    let directions = [
+                (-1, -1),
+                ( 0, -1),
+                ( 1, -1),
+                ( 1,  0),
+                ( 1,  1),
+                ( 0,  1),
+                (-1,  1),
+                (-1,  0)
+    ];
+
+
     // the main loop
     loop {
         // check if there is no path 
@@ -103,7 +115,7 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
         }
 
         // loop over all the neighbours 
-        for (x_dir, y_dir) in [(1, 0), (-1, 0), (0, 1), (0, -1)].iter() {
+        for (x_dir, y_dir) in directions.iter() {
             // set the location
             location = Point::new(current.location.x + x_dir, current.location.y + y_dir);
 
@@ -124,12 +136,22 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
             // clone the path to parrent vector
             path_to_parrent = current.path_to_parrent.clone();
 
+
             // add the right number
+            /*
+             * 0 1 2
+             * 7   3
+             * 6 5 4
+            */
             match (x_dir, y_dir) {
-                (1, 0) => path_to_parrent.push(2),
-                (-1,0) => path_to_parrent.push(4),
-                (0, 1) => path_to_parrent.push(3),
-                (0,-1) => path_to_parrent.push(1),
+                (-1, -1) => path_to_parrent.push(0),
+                ( 0, -1) => path_to_parrent.push(1),
+                ( 1, -1) => path_to_parrent.push(2),
+                ( 1,  0) => path_to_parrent.push(3),
+                ( 1,  1) => path_to_parrent.push(4),
+                ( 0,  1) => path_to_parrent.push(5),
+                (-1,  1) => path_to_parrent.push(6),
+                (-1,  0) => path_to_parrent.push(7),
                 _ => return Err(String::from("Can't find direction")),
             }
 

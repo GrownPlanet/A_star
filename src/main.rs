@@ -10,6 +10,27 @@ use std::time::Duration;
 pub mod path_finder;
 
 pub fn main() -> Result<(), String> {
+    // calculate path first
+    let tile_map = vec![
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        vec![0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0],
+        vec![0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        vec![0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+    ];
+
+    let solid_tiles = [1];
+
+    let start = Point::new(1, 1);
+    let end = Point::new(5, 5);
+
+    let path = path_finder::path_finder((start.x, start.y), (end.x, end.y), &tile_map, &solid_tiles).unwrap();
+
+    // sdl setup
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
@@ -29,32 +50,15 @@ pub fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
 
-    let tile_map = vec![
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-        vec![0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0],
-        vec![0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-        vec![0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    ];
-
+    // rest of variables
     let tile_colors = HashMap::from([
         (0, Color::RGB(255, 255, 255)),
         (1, Color::RGB(45, 45, 45)),
     ]);
 
-    let solid_tiles = [1];
-
-    let start = Point::new(1, 1);
-    let end = Point::new(5, 5);
 
     let mut path_r = Rect::new(start.x * tile_size as i32, start.y * tile_size as i32, tile_size, tile_size);
     let mut index = 0;
-
-    let path = path_finder::path_finder((start.x, start.y), (end.x, end.y), &tile_map, &solid_tiles).unwrap();
 
     for v in &path
     {
