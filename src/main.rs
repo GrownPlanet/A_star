@@ -6,29 +6,13 @@ use sdl2::rect::{Rect, Point};
 use sdl2::keyboard::Keycode;
 use std::collections::HashMap;
 use std::time::Duration;
+use std::time::Instant;
 
 pub mod path_finder;
 
-pub fn main() -> Result<(), String> {
-    // calculate path first
-    let tile_map = vec![
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
-        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-        vec![0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-        vec![0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0],
-        vec![0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-        vec![0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    ];
+pub fn main() -> Result<(), String>
+{
 
-    let solid_tiles = [1];
-
-    let start = Point::new(1, 1);
-    let end = Point::new(5, 5);
-
-    let path = path_finder::path_finder((start.x, start.y), (end.x, end.y), &tile_map, &solid_tiles).unwrap();
 
     // sdl setup
     let sdl_context = sdl2::init()?;
@@ -50,11 +34,36 @@ pub fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
 
+    // calculate path first
+    let tile_map = vec![
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        vec![0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        vec![0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0],
+        vec![0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        vec![0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+    ];
+
     // rest of variables
     let tile_colors = HashMap::from([
         (0, Color::RGB(255, 255, 255)),
         (1, Color::RGB(45, 45, 45)),
     ]);
+
+    let solid_tiles = [1];
+
+    let start = Point::new(1, 1);
+    let end = Point::new(5, 5);
+
+    let now = Instant::now();
+
+    let path = path_finder::path_finder((start.x, start.y), (end.x, end.y), &tile_map, &solid_tiles).unwrap();
+
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
 
 
     let mut path_r = Rect::new(start.x * tile_size as i32, start.y * tile_size as i32, tile_size, tile_size);
@@ -112,15 +121,82 @@ pub fn main() -> Result<(), String> {
             canvas.draw_line(Point::new(0, (y * tile_size) as i32), Point::new((screen_width) as i32, (y * tile_size) as i32))?;
         }
 
+        canvas.set_draw_color(Color::RGB(0, 0, 255));
+        let ts = tile_size as i32;
+        let mut cp = Point::new(start.x * ts + ts/2, start.y * ts + ts/2);
+        for i in &path
+        {
+            match i {
+                0 => {
+                    canvas.draw_line(cp, Point::new(cp.x - ts, cp.y - ts))?;
+                    cp = Point::new(cp.x - ts, cp.y - ts);
+                },
+                1 => {
+                    canvas.draw_line(cp, Point::new(cp.x, cp.y - ts))?;
+                    cp = Point::new(cp.x, cp.y - ts);
+                },
+                2 => {
+                    canvas.draw_line(cp, Point::new(cp.x + ts, cp.y - ts))?;
+                    cp = Point::new(cp.x + ts, cp.y - ts);
+                },
+                3 => {
+                    canvas.draw_line(cp, Point::new(cp.x + ts, cp.y))?;
+                    cp = Point::new(cp.x + ts, cp.y);
+                },
+                4 => {
+                    canvas.draw_line(cp, Point::new(cp.x + ts, cp.y + ts))?;
+                    cp = Point::new(cp.x + ts, cp.y + ts);
+                },
+                5 => {
+                    canvas.draw_line(cp, Point::new(cp.x, cp.y + ts))?;
+                    cp = Point::new(cp.x, cp.y + ts);
+                },
+                6 => {
+                    canvas.draw_line(cp, Point::new(cp.x - ts, cp.y + ts))?;
+                    cp = Point::new(cp.x - ts, cp.y + ts);
+                },
+                7 => {
+                    canvas.draw_line(cp, Point::new(cp.x - ts, cp.y))?;
+                    cp = Point::new(cp.x - ts, cp.y);
+                },
+                _ => (),
+            }
+        }
+
         canvas.present();
 
         if index < path.len() && playing == 1
         {
-            match path[index] {
-                1 => path_r.y -= tile_size as i32,
-                2 => path_r.x += tile_size as i32,
-                3 => path_r.y += tile_size as i32,
-                4 => path_r.x -= tile_size as i32,
+            match path[index]
+            {
+                0 => {
+                    path_r.x -= tile_size as i32;
+                    path_r.y -= tile_size as i32;
+                },
+                1 => {
+                    path_r.y -= tile_size as i32;
+                },
+                2 => {
+                    path_r.x += tile_size as i32;
+                    path_r.y -= tile_size as i32;
+                },
+                3 => {
+                    path_r.x += tile_size as i32;
+                },
+                4 => {
+                    path_r.x += tile_size as i32;
+                    path_r.y += tile_size as i32;
+                },
+                5 => {
+                    path_r.y += tile_size as i32;
+                },
+                6 => {
+                    path_r.x -= tile_size as i32;
+                    path_r.y += tile_size as i32;
+                },
+                7 => {
+                    path_r.x -= tile_size as i32;
+                },
                 _ => (),
             }
             index += 1;
@@ -128,7 +204,7 @@ pub fn main() -> Result<(), String> {
             playing = -1
         }
         
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 10));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 5));
     }
 
     Ok(())
