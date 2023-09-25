@@ -12,8 +12,6 @@ pub mod path_finder;
 
 pub fn main() -> Result<(), String>
 {
-
-
     // sdl setup
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
@@ -43,7 +41,7 @@ pub fn main() -> Result<(), String>
         vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
         vec![0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
         vec![0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0],
-        vec![0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        vec![0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
         vec![0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     ];
 
@@ -58,10 +56,12 @@ pub fn main() -> Result<(), String>
     let start = Point::new(1, 1);
     let end = Point::new(5, 5);
 
+    // start time
     let now = Instant::now();
 
     let path = path_finder::path_finder((start.x, start.y), (end.x, end.y), &tile_map, &solid_tiles).unwrap();
 
+    // get and print elapsed time
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
 
