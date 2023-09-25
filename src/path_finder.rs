@@ -140,10 +140,10 @@ pub fn path_finder (start: (i32, i32), end: (i32, i32), tile_map: &Vec<Vec<u32>>
             location = Point::new(current.location.x + x_dir, current.location.y + y_dir);
 
             // check if location is out of bounds
-            if  location.y < 0 
-                || location.x < 0 
-                || location.y >= tile_map.len() as i32
-                || location.x >= tile_map[0].len() as i32
+            if  location.y < 0 ||
+                location.x < 0 ||
+                location.y >= tile_map.len() as i32 ||
+                location.x >= tile_map[0].len() as i32
             {
                     continue;
             }
